@@ -10,15 +10,12 @@ const JWT_SECRET = "thi$IsaMERNapp";
 
 //router.post(path, [middleware], callback)
 
-// Creating a user using POST "/api/auth/createUsers" Doesn't do Auth
-router.post(
-  "/createUser",
-  [
+//Route 1: Creating a user using POST "/api/auth/createUsers" Doesn't do Auth. No login required
+router.post( "/createUser", [
     body("name", "Not a valid name.").isLength({ min: 3 }),
     body("email").isEmail().withMessage("Not a valid e-mail address"),
     body("password").isLength({ min: 5 }).withMessage("Not a valid password"),
-  ],
-  async (req, res) => {
+  ], async (req, res) => {
     // Validate the request
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -66,7 +63,7 @@ router.post(
   }
 );
 
-//Authenticate a USER, POST on "/api/auth/login"
+//Route 2: Authenticate a USER, POST on "/api/auth/login"
 router.post(
   "/login",
   [
@@ -79,15 +76,17 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    //destructuring to remove password and email from the body
     const { email, password } = req.body;
     try {
+      //here to find if user exists
       let user = await User.findOne({ email });
-      if (!user) {
+      if (!user) { //user doesnt exist
         return res
           .status(400)
           .json({ error: "Enter with correct credentials." });
       }
-
+      //bcrypt.compar(string, hash password) return true false
       const passwordCompare = await bcrypt.compare(password, user.password);
       if (!passwordCompare) {
         return res
@@ -109,8 +108,8 @@ router.post(
   }
 );
 
-//Get User. Send token and get user info from 
-router.post('/getuser', fetchuser, async(req,res) =>{
+//Route 3: Get User. Send token and get user info from 
+router.post('/getUser', fetchuser, async(req,res) =>{
   
   try{
     let userId = req.user.id;
